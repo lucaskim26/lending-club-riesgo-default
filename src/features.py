@@ -26,7 +26,7 @@ EX_ANTE = [
     # Préstamo pedido y datos declarados
     "loan_amnt", "term", "purpose", "title", "desc",
     "emp_title", "emp_length", "home_ownership", "annual_inc",
-    "verification_status", "zip_code", "addr_state", "dti",
+    "zip_code", "addr_state", "dti",
     "application_type", "annual_inc_joint", "dti_joint", "verification_status_joint",
     # Buró de crédito: historial básico (disponible desde 2007)
     "fico_range_low", "fico_range_high", "earliest_cr_line", "delinq_2yrs",
@@ -63,9 +63,12 @@ BENCHMARK_LC = ["grade", "sub_grade", "int_rate", "installment"]
 
 # Datos de la originación decididos por Lending Club o por los inversores, no
 # por el solicitante. No se usan como feature.
+# `verification_status` también es una decisión de Lending Club: verificaba el
+# ingreso con más frecuencia a los solicitantes que su propio modelo consideraba
+# riesgosos, así que en parte es un output de su scoring (ver notebook, 6.4).
 ORIGINACION = [
     "issue_d", "funded_amnt", "funded_amnt_inv", "initial_list_status",
-    "disbursement_method", "policy_code",
+    "disbursement_method", "policy_code", "verification_status",
 ]
 
 # Solo existen después de otorgado el préstamo: usarlas sería data leakage.
@@ -132,7 +135,7 @@ BINARIAS = [
 # captura `buro_extendido_disponible`.
 FALTANTE_INFORMATIVO = ["mths_since_recent_inq", "mo_sin_old_il_acct", "bc_util"]
 
-CATEGORICAS = ["home_ownership", "verification_status", "purpose", "addr_state"]
+CATEGORICAS = ["home_ownership", "purpose", "addr_state"]
 
 # Resultado de las reglas de selección aplicadas sobre train (el notebook,
 # Sección 8, las recalcula y verifica que coincidan con estas listas):
@@ -211,7 +214,7 @@ def construir_features(df):
     out["home_ownership"] = df["home_ownership"].where(
         df["home_ownership"].isin(["RENT", "MORTGAGE", "OWN"]), "OTHER"
     )
-    for col in ["verification_status", "purpose", "addr_state"]:
+    for col in ["purpose", "addr_state"]:
         out[col] = df[col]
 
     return out

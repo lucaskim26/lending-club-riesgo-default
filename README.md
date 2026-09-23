@@ -31,6 +31,10 @@ Sistema de decisión para el otorgamiento de préstamos, basado en datos histór
 └── README.md
 ```
 
+## Cómo leer el notebook sin ejecutarlo
+
+El notebook está guardado con todos sus resultados (tablas y gráficos), así que se puede leer directamente en GitHub sin instalar nada ni descargar los datos. Los gráficos también están en `figures/`.
+
 ## Cómo reproducir
 
 ```bash
@@ -56,7 +60,7 @@ La primera ejecución del notebook lee el CSV completo por bloques y guarda parq
 
 1. **Target**: `loan_status` → binario (`Charged Off` = 1, `Fully Paid` = 0), excluyendo préstamos en curso.
 2. **Cosechas maduras**: excluir los préstamos en curso sesga la tasa de default de las cosechas recientes (censura). Se usan solo cosechas en las que prácticamente todos los préstamos ya terminaron, y solo el plazo de 36 meses (2007-2015; 618 mil préstamos).
-3. **Clasificación de variables**: las 151 columnas se clasifican en ex-ante (disponibles al solicitar), ex-post (excluidas por *data leakage*), benchmark de Lending Club (`grade`, `sub_grade`, `int_rate`) y datos de originación.
+3. **Clasificación de variables**: las 151 columnas se clasifican en ex-ante (disponibles al solicitar), ex-post (excluidas por *data leakage*), benchmark de Lending Club (`grade`, `sub_grade`, `int_rate`) y datos de originación, que incluyen las decisiones de Lending Club como `verification_status`.
 4. **Split temporal**: train (jun-2007 a ago-2015) y test (sep-dic 2015) por fecha de originación, apenas definida la población y *antes* de todo el EDA. El diagnóstico de calidad y el EDA se hacen solo sobre train.
 5. **LGD**: calculado empíricamente sobre la exposición al momento del default, con los préstamos de train en default. Se guarda además la pérdida realizada de cada préstamo (train y test) para validar la prima por banda en la E04.
 6. **Transformaciones**: fila a fila en `construir_features`; las que aprenden de los datos (winsorización, imputación, estandarización, one-hot) en un pipeline de scikit-learn ajustado solo con train.
