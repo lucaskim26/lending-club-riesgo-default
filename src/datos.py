@@ -20,7 +20,8 @@ RUTA_MADURAS = RAIZ / "data" / "prestamos_cosechas_maduras.parquet"
 RUTA_RESUMEN = RAIZ / "data" / "resumen_todos_los_prestamos.parquet"
 
 # Última cosecha (mes de originación) en la que prácticamente todos los
-# préstamos ya terminaron al momento del corte del dataset (fin de 2018).
+# préstamos ya terminaron en el snapshot observado. El nombre del archivo
+# delimita las originaciones (2007-2018), no la fecha exacta de actualización.
 # Se justifica con la tabla de % de préstamos resueltos por cosecha y plazo
 # (notebook 02, Sección 2.2).
 ULTIMA_COSECHA_MADURA = {
