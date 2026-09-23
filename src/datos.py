@@ -72,16 +72,22 @@ def cargar_cosechas_maduras(ruta=RUTA_RAW, destino=RUTA_MADURAS, forzar=False):
     if destino.exists() and not forzar:
         return pd.read_parquet(destino)
 
+    # Los bloques se guardan como texto de pyarrow (mucho más compacto que el
+    # texto de Python), para reducir el uso de memoria al juntarlos.
     bloques = []
     for bloque in pd.read_csv(ruta, dtype=str, chunksize=200_000):
-        bloques.append(bloque[_es_cosecha_madura(bloque)])
+        bloques.append(bloque[_es_cosecha_madura(bloque)].astype("string[pyarrow]"))
     df = pd.concat(bloques, ignore_index=True)
+    del bloques
 
     for col in df.columns:
-        convertida = pd.to_numeric(df[col], errors="coerce")
+        texto = df[col].astype(object).where(df[col].notna(), None)
+        convertida = pd.to_numeric(texto, errors="coerce")
         # Una columna es numérica si todo valor no vacío se pudo convertir
-        if convertida.notna().sum() == df[col].notna().sum():
+        if convertida.notna().sum() == texto.notna().sum():
             df[col] = convertida
+        else:
+            df[col] = texto
 
     df.to_parquet(destino, index=False)
     return df
