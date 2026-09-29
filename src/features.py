@@ -245,6 +245,29 @@ def calcular_perdida(df):
 # Transformaciones con parámetros aprendidos (se ajustan solo con train)
 # ---------------------------------------------------------------------------
 
+def estimar_severidad(train):
+    """Media de pérdida/monto entre defaults de train, para el baseline de prima.
+
+    Recibe las columnas `default` y `perdida_sobre_monto` exportadas en E02.
+    Calcula E[LGD * EAD/monto | default], no el producto de sus medias.
+    Cada préstamo en default tiene el mismo peso; no es una pérdida de cartera
+    ponderada por monto. El resultado se congela antes de evaluar validación o
+    test y se multiplica por la PD para obtener pérdida esperada de vida completa.
+
+    No omite pérdidas desconocidas de defaults: hacerlo sesgaría la estimación.
+    Los NaN de préstamos pagados no intervienen en este promedio condicional.
+    """
+    if not train["default"].isin([0, 1]).all():
+        raise ValueError("default debe contener solo 0 y 1, sin faltantes.")
+    perdidas = train.loc[train["default"] == 1, "perdida_sobre_monto"]
+    if perdidas.empty:
+        raise ValueError("Se necesita al menos un default en train.")
+    valores = perdidas.to_numpy(dtype=float, na_value=np.nan)
+    if not np.isfinite(valores).all() or ((valores < 0) | (valores > 1)).any():
+        raise ValueError("Cada default debe tener una pérdida finita entre 0 y 1.")
+    return float(valores.mean())
+
+
 class Winsorizador(BaseEstimator, TransformerMixin):
     """Recorta cada columna a los percentiles [inferior, superior] de train."""
 
